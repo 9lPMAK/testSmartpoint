@@ -17,7 +17,7 @@ function getcontents($url){
 	curl_close($ch);
 	return $output;
 }
- 
+
 $doc = phpQuery::newDocument(getcontents('https://101hotels.com/opinions/hotel/volzhskiy/gostinitsa_ahtuba.html#reviews-container'));
 
 // ====================================== массив с именами ================================
@@ -51,6 +51,14 @@ foreach($entry AS $item){
 	$str = preg_replace( "/\r|\n/", "", $str );
 	$arrOtziv[] =  $str;
 }
+// ====================================== Рейтинг/кол-во отзывов и оценок с главной страницы ================================
+$docHeader = phpQuery::newDocument(getcontents('https://101hotels.com/main/cities/volzhskiy/gostinitsa_ahtuba.html'));
+$nameHostel = $docHeader->find('h1.hotel__header')->text();
+$nameHostel = trim($nameHostel);
+$rating = (float)$docHeader->find('span.score')->text(); // Рейтинг
+$otzivsAndEvaluations = $docHeader->find('span.reviews')->text();
+$otzivs = (int)explode(' ',$otzivsAndEvaluations)[0]; //кол-во отзывов
+$evaluations = (int)explode(' ',$otzivsAndEvaluations)[3]; //кол-во оценок
 
 // ====================================== добавление в БД ================================
 
@@ -63,7 +71,13 @@ for ($i=0; $i<count($arrOtziv); $i++) {
 		}
 }
 
+$sql2 =  "INSERT INTO `general_information` (`id`, `nameHostel`, `rayting`, `otzivs`, `evaluations`) VALUES (NULL, '$nameHostel','$rating','$otzivs','$evaluations')";
+	if (mysqli_query($connect, $sql2)) {
+			echo "Успешно создана новая запись";
+		} else {
+			echo "Ошибка: " . $sql . "<br>"."\n" . mysqli_error($connect);
+		}
+
 mysqli_close($connect);
 
 ?>
-
