@@ -26,10 +26,15 @@ $arrNames = array();
 $entry = $doc->find('.reviewer');
 foreach($entry AS $item){
 	$str = pq($item)->text();
-	$str = explode(' ',$str)[40];
+	$str = trim($str);
+	$str = trim(explode(' ',$str)[4]);
+	if ($str == ''){
+		$str = pq($item)->text();
+		$str = trim($str);
+		$str = trim(explode(' ',$str)[16]);
+	}
 	$str = preg_replace('/[0-9]+/', '', $str);
 	$arrNames[] = $str;
-	
 }
 
 // ====================================== массив с датами ================================
@@ -44,10 +49,11 @@ foreach($entry AS $item){
 $arrOtziv = array();
 $entry = $doc->find('.review');
 foreach($entry AS $item){
-	$str = pq($item)->text($val);
-	$str = preg_replace('/[0-9]+/', '', $str);
-	$str = trim(str_replace(' ', '', $str));
-	$str = trim(str_replace('/\n/', '', $str));
+	$str = pq($item)->text();
+	// $str = preg_replace('/[0-9]+/', '', $str);
+	// $str = trim(str_replace(' ', '', $str));
+	// $str = trim(str_replace('/\n/', '', $str));
+	$str = trim($str);
 	$str = preg_replace( "/\r|\n/", "", $str );
 	$arrOtziv[] =  $str;
 }
