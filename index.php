@@ -57,6 +57,16 @@ foreach($entry AS $item){
 	$str = preg_replace( "/\r|\n/", "", $str );
 	$arrOtziv[] =  $str;
 }
+// ====================================== Рейтинг ====================+++++++++============
+// $arrRayting = array();
+// $entry = $doc->find('span.review-score');
+// foreach($entry AS $item){
+// 	$str = pq($item)->text();
+// 	$str = trim($str);
+// 	$str = preg_replace( "/\r|\n/", "", $str );
+// 	$arrRayting[] =  $str;
+// }
+
 // ====================================== Рейтинг/кол-во отзывов и оценок с главной страницы ================================
 $docHeader = phpQuery::newDocument(getcontents('https://101hotels.com/main/cities/volzhskiy/gostinitsa_ahtuba.html'));
 $nameHostel = $docHeader->find('h1.hotel__header')->text();
@@ -69,12 +79,14 @@ $evaluations = (int)explode(' ',$otzivsAndEvaluations)[3]; //кол-во оце�
 // ====================================== добавление в БД ================================
 
 for ($i=0; $i<count($arrOtziv); $i++) {
-	$sql =  "INSERT INTO `otzivs` (`id`, `name`, `text`, `rating`, `date`) VALUES (NULL, '$arrNames[$i]','$arrOtziv[$i]','0','$arrDate[$i]')";
-	if (mysqli_query($connect, $sql)) {
-			echo "Успешно создана новая запись";
-		} else {
-			echo "Ошибка: " . $sql . "<br>"."\n" . mysqli_error($connect);
-		}
+	if(!(bool)preg_match("/Расположение/", $arrOtziv[$i])){
+		$sql =  "INSERT INTO `otzivs` (`id`, `name`, `text`, `rating`, `date`) VALUES (NULL, '$arrNames[$i]','$arrOtziv[$i]','0','$arrDate[$i]')";
+		if (mysqli_query($connect, $sql)) {
+				echo "Успешно создана новая запись";
+			} else {
+				echo "Ошибка: " . $sql . "<br>"."\n" . mysqli_error($connect);
+			}
+	}
 }
 
 $sql2 =  "INSERT INTO `general_information` (`id`, `nameHostel`, `rayting`, `otzivs`, `evaluations`) VALUES (NULL, '$nameHostel','$rating','$otzivs','$evaluations')";
