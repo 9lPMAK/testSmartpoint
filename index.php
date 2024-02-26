@@ -50,22 +50,27 @@ $arrOtziv = array();
 $entry = $doc->find('.review');
 foreach($entry AS $item){
 	$str = pq($item)->text();
-	// $str = preg_replace('/[0-9]+/', '', $str);
-	// $str = trim(str_replace(' ', '', $str));
-	// $str = trim(str_replace('/\n/', '', $str));
 	$str = trim($str);
 	$str = preg_replace( "/\r|\n/", "", $str );
+	$Astr = explode(' ',$str);
 	$arrOtziv[] =  $str;
 }
 // ====================================== Рейтинг ====================+++++++++============
-// $arrRayting = array();
-// $entry = $doc->find('span.review-score');
-// foreach($entry AS $item){
-// 	$str = pq($item)->text();
-// 	$str = trim($str);
-// 	$str = preg_replace( "/\r|\n/", "", $str );
-// 	$arrRayting[] =  $str;
-// }
+$arrRayting = array();
+$entry = $doc->find('.review');
+foreach($entry AS $item){
+	$str = pq($item)->text();
+	if((bool)preg_match("/Нормально/", $str) || (bool)preg_match("/Плохо/", $str) ){
+		$str = trim($str);
+		$str = explode(' ',$str)[0];
+		$str = floatval(preg_replace('/[^.0-9]+/', '', $str));
+	}
+	else{
+		$str = '';
+		$str = (float)$str;
+	}
+	$arrRayting[] =  $str;
+}
 
 // ====================================== Рейтинг/кол-во отзывов и оценок с главной страницы ================================
 $docHeader = phpQuery::newDocument(getcontents('https://101hotels.com/main/cities/volzhskiy/gostinitsa_ahtuba.html'));
@@ -80,7 +85,7 @@ $evaluations = (int)explode(' ',$otzivsAndEvaluations)[3]; //кол-во оце�
 
 for ($i=0; $i<count($arrOtziv); $i++) {
 	if(!(bool)preg_match("/Расположение/", $arrOtziv[$i])){
-		$sql =  "INSERT INTO `otzivs` (`id`, `name`, `text`, `rating`, `date`) VALUES (NULL, '$arrNames[$i]','$arrOtziv[$i]','0','$arrDate[$i]')";
+		$sql =  "INSERT INTO `otzivs` (`id`, `name`, `text`, `rating`, `date`) VALUES (NULL, '$arrNames[$i]','$arrOtziv[$i]','$arrRayting[$i]','$arrDate[$i]')";
 		if (mysqli_query($connect, $sql)) {
 				echo "Успешно создана новая запись";
 			} else {
